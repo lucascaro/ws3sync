@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "target": "ESNext",
+    "jsx": "react",
+    "sourceMap": true,
+    "outDir": "dist",
+    "strict": true
+  },
+  "include": ["src/**/*.ts", "src/commands/push.tsx", "src/helpers/console.tsx"],
+  "exclude": ["node_modules"]
+}
