@@ -3,6 +3,7 @@ import { formatSize } from "../format";
 describe("format", () => {
   describe("formatSize", () => {
     it("should format bytes", () => {
+      expect(formatSize(0)).toBe("0B");
       expect(formatSize(1)).toBe("1.00B");
       expect(formatSize(30)).toBe("30.00B");
       expect(formatSize(100)).toBe("100.00B");

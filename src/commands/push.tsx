@@ -9,6 +9,8 @@ import { Timers } from "../helpers/timers";
 import { formatSize } from "../helpers/format";
 import { format } from "prettier";
 
+const fileSizeReducer = (p: number, c: ListResult): number => p + c.stat.size;
+
 export const PushCmd = command("push")
   .withArgument(stringArg("local", "Local rooot directory to push", undefined, true))
   .withArgument(stringArg("remote", "Bucket and path", undefined, true))
@@ -36,11 +38,10 @@ export const PushCmd = command("push")
 
     c.setTask([`Getting list of files to push...`], true);
     const initTimer = Timers.startTimer();
-    const files = await lsRecursive(rootDir).then((files) =>
-      // Optionally filter by mtime
-      notBefore ? filterByMtime(files, notBefore) : files,
-    );
-    const totalSize = files.reduce((p, c) => p + c.stat.size, 0);
+    const allFiles = await lsRecursive(rootDir);
+    const files = notBefore ? filterByMtime(allFiles, notBefore) : allFiles;
+
+    const totalSize = files.reduce(fileSizeReducer, 0);
     c.log(
       `Pushing ${files.length} files (${formatSize(totalSize)}) from ${local} to ${remote} ${concurrency} concurrent ${
         since ? `since ${since}` : ""
@@ -100,11 +101,19 @@ export const PushCmd = command("push")
 
     const totalTimer = initTimer.stop();
     const totalUploadTimer = uploadTimer.stop();
+    const totalSpeedBytes = accSize / totalUploadTimer.seconds;
 
     c.ok(`Done pushing ${files.length} files from ${local} to ${remote}${since ? ` since ${since}` : ""}\n`);
     c.log(`  Total time:   ${chalk.green(totalTimer.human)}`);
-    c.log(`  List time:    ${chalk.green(uploadTimer.human)}`);
-    c.log(`  Upload time:  ${chalk.green(fileListTimer.human)}`);
-    c.log(`  Upload speed: ${chalk.green(totalUploadTimer.getSpeed(nDone))} files/second`);
+    c.log(`  List time:    ${chalk.green(fileListTimer.human)}`);
+    if (files.length && !dryrun) {
+      c.log(`  Upload time:  ${chalk.green(totalUploadTimer.human)}`);
+      c.log(`  Upload speed: ${chalk.green(totalUploadTimer.getSpeed(nDone))} files/s`);
+      c.log(`  Upload size:  ${chalk.green(formatSize(totalSpeedBytes))}/s`);
+    }
+    if (allFiles.length !== files.length) {
+      const skippedSize = allFiles.reduce(fileSizeReducer, 0) - totalSize;
+      c.log(`\n  Skipped: ${chalk.green(allFiles.length - files.length)} files (${formatSize(skippedSize)})`);
+    }
     c.clearTask();
   });

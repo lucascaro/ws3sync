@@ -17,8 +17,7 @@ export async function lsRecursive(dir: string): Promise<ListResult[]> {
   return Promise.all(fileList.map(async (file) => ({ file, stat: await fs.stat(file) })));
 }
 
-export async function filterByMtime(files: ListResult[], notBefore: number): Promise<ListResult[]> {
-  // return files;
+export function filterByMtime(files: ListResult[], notBefore: number): ListResult[] {
   return (
     files
       // We already have stat, so filter by it.
