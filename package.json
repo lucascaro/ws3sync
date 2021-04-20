@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A simple node.js project starter for typescript.",
   "author": "Lucas Caro",
+  "private": false,
   "main": "dist/index.js",
   "bin": {
     "ws3sync": "./bin/cli.sh"
