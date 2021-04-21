@@ -63,8 +63,12 @@ export const PushCmd = command("push")
       // Remove  root directory and slash from key.
       const key = `${prefix}${file.slice(rootDir.length + 1)}`;
       const thisFileTimer = Timers.startTimer();
-      await s3.putFile(bucket, key, file);
-
+      try {
+        await s3.putFile(bucket, key, file);
+      } catch (err) {
+        c.error(`Error uploading ${file}: ${err}`);
+        throw err;
+      }
       accSize += stat.size;
       nDone++;
       const speed = nDone / uploadTimer.seconds;
