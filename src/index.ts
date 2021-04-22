@@ -1,4 +1,4 @@
-import { command, stringOption } from "console-commando";
+import { command, numericOption, stringOption } from "console-commando";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { PushCmd } from "./commands/push";
@@ -13,6 +13,7 @@ command(cmdName)
   .withDescription(description)
   .withOption(stringOption("endpoint", "E", "S3 Endpoint"))
   .withOption(stringOption("region", "R", "S3 Region"))
+  .withOption(numericOption("max-attempts", "M", "How many times a request will be made at most in case of retry."))
   .withPreProcessor((cmd, state) => {
     const s3 = makeS3Helper({
       endpoint: cmd.getStringOption("endpoint"),
@@ -20,6 +21,7 @@ command(cmdName)
       // Credentials from environment variables.
       // AWS_ACCESS_KEY_ID
       // AWS_SECRET_ACCESS_KEY
+      maxAttempts: cmd.getNumericOption("max-attempts") || 2,
       forcePathStyle: true,
     });
     return state.set("s3", s3);
