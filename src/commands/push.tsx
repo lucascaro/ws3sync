@@ -64,7 +64,7 @@ export const PushCmd = command("push")
       const key = `${prefix}${file.slice(rootDir.length + 1)}`;
       const thisFileTimer = Timers.startTimer();
       try {
-        await s3.putFile(bucket, key, file);
+        await s3.putFile(bucket, key, file, stat);
       } catch (err) {
         c.error(`Error uploading ${file}: ${err}`);
         throw err;

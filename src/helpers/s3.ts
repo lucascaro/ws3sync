@@ -10,7 +10,7 @@ import {
   S3ClientConfig,
   _Object,
 } from "@aws-sdk/client-s3";
-import { createReadStream } from "fs";
+import { createReadStream, Stats } from "fs";
 import { basename } from "path";
 import { Readable } from "stream";
 
@@ -18,8 +18,8 @@ export interface S3Helper {
   createBucket: (bucket: string) => Promise<CreateBucketCommandOutput>;
   listBuckets: () => Promise<Bucket[]>;
   listObjects: (bucket: string, prefix?: string) => Promise<_Object[]>;
-  putObject: (bucket: string, key: string, body: Buffer | Readable) => Promise<any>;
-  putFile: (bucket: string, key: string, path: string) => Promise<PutObjectCommandOutput>;
+  putObject: (bucket: string, key: string, body: Buffer | Readable, size?: number) => Promise<any>;
+  putFile: (bucket: string, key: string, path: string, stat: Stats) => Promise<PutObjectCommandOutput>;
 }
 
 export const makeS3Helper = (configuration: S3ClientConfig): Readonly<S3Helper> => {
@@ -45,12 +45,17 @@ export const makeS3Helper = (configuration: S3ClientConfig): Readonly<S3Helper> 
     const res = await client.send(new ListObjectsCommand({ Bucket: bucket, Prefix: prefix }));
     return res.Contents || [];
   }
-  function putObject(bucket: string, key: string, body: Buffer | Readable): Promise<PutObjectCommandOutput> {
-    return client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: body }));
+  function putObject(
+    bucket: string,
+    key: string,
+    body: Buffer | Readable,
+    size?: number,
+  ): Promise<PutObjectCommandOutput> {
+    return client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentLength: size }));
   }
-  function putFile(bucket: string, key: string, path: string): Promise<PutObjectCommandOutput> {
+  function putFile(bucket: string, key: string, path: string, stat?: Stats): Promise<PutObjectCommandOutput> {
     const readable = createReadStream(path);
-    return putObject(bucket, key, readable);
+    return putObject(bucket, key, readable, stat?.size);
   }
 
   return Object.freeze(self);
