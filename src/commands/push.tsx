@@ -59,27 +59,27 @@ export const PushCmd = command("push")
       // TODO: parameter
       maxConcurrent: concurrency,
     });
-    // const maxRetries = 2;
+    const maxRetries = 3;
     const putFile = limiter.wrap(async ({ file, stat }: ListResult, i: number) => {
       // Remove  root directory and slash from key.
       const key = `${prefix}${file.slice(rootDir.length + 1)}`;
       const thisFileTimer = Timers.startTimer();
-      // let tries = 1;
-      // let success = false;
-      // while (!success && tries <= maxRetries) {
-      try {
-        await s3.putFile(bucket, key, file, stat);
-        // success = true;
-      } catch (err) {
-        // if (tries < maxRetries) {
-        // tries++;
-        // c.warn(`Retrying due to error uploading ${file}: ${err}`);
-        // } else {
-        c.error(`Error uploading ${file}: ${err}`);
-        throw err;
-        // }
+      let tries = 1;
+      let success = false;
+      while (!success && tries <= maxRetries) {
+        try {
+          await s3.putFile(bucket, key, file, stat);
+          success = true;
+        } catch (err) {
+          if (tries < maxRetries) {
+            tries++;
+            c.warn(`Retrying due to error uploading ${file}: ${err}`);
+          } else {
+            c.error(`Error uploading ${file}: ${err}`);
+            throw err;
+          }
+        }
       }
-      // }
 
       accSize += stat.size;
       nDone++;
