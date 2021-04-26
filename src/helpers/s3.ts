@@ -68,7 +68,7 @@ export function parseBucketAndPrefix(remote: string): { bucket: string; prefix: 
     throw new Error(`Invalid remote`);
   }
   const { bucket, pathPrefix } = match.groups;
-  const prefix = `/${basename(pathPrefix)}/`;
+  const prefix = `/${pathPrefix}/`.replace(/\/+/g, "/");
 
   return { bucket, prefix };
 }

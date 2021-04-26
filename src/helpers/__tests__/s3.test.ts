@@ -8,6 +8,13 @@ describe("parseBucketAndPrefix", () => {
     expect(prefix).toBe("/prefix/");
   });
 
+  it("should parse deeply nested directories", () => {
+    const { bucket, prefix } = parseBucketAndPrefix("s3://bucket-name/prefix1/prefix2/prefix3/prefix4");
+
+    expect(bucket).toBe("bucket-name");
+    expect(prefix).toBe("/prefix1/prefix2/prefix3/prefix4/");
+  });
+
   it("should throw on invalid input", () => {
     expect(() => parseBucketAndPrefix("bucket-name/prefix")).toThrowError();
     expect(() => parseBucketAndPrefix("s3:bucket-name")).toThrowError();
