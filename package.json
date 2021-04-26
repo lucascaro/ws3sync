@@ -1,6 +1,6 @@
 {
   "name": "@lucascaro/ws3sync",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A simple node.js project starter for typescript.",
   "author": "Lucas Caro",
   "private": false,
