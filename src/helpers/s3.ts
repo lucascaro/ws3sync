@@ -11,6 +11,7 @@ import {
   _Object,
 } from "@aws-sdk/client-s3";
 import { createReadStream, Stats } from "fs";
+import { lookup } from "mime-types";
 import { basename } from "path";
 import { Readable } from "stream";
 
@@ -50,12 +51,16 @@ export const makeS3Helper = (configuration: S3ClientConfig): Readonly<S3Helper> 
     key: string,
     body: Buffer | Readable,
     size?: number,
+    mimeType?: string,
   ): Promise<PutObjectCommandOutput> {
-    return client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentLength: size }));
+    return client.send(
+      new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentLength: size, ContentType: mimeType }),
+    );
   }
   function putFile(bucket: string, key: string, path: string, stat?: Stats): Promise<PutObjectCommandOutput> {
     const readable = createReadStream(path);
-    return putObject(bucket, key, readable, stat?.size);
+    const mimeType = lookup(path) || undefined;
+    return putObject(bucket, key, readable, stat?.size, mimeType);
   }
 
   return Object.freeze(self);

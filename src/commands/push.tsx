@@ -88,7 +88,7 @@ export const PushCmd = command("push")
       if (verbose) {
         c.info(
           `[${i} / ${files.length}] Uploading ${chalk.green(file)} to ${chalk.yellow(
-            `s3://${bucket}${key}`,
+            `s3://${bucket}/${key}`,
           )} (${formatSize(stat.size)}) in ${chalk.green(thisFileTimer.ms)}ms`,
         );
       }
